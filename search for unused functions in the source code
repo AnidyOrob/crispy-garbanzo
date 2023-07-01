@@ -1,0 +1,32 @@
+import ast
+import os
+
+def find_unused_functions(directory):
+    unused_functions = []
+
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".py"):
+                file_path = os.path.join(root, file)
+                with open(file_path, "r") as f:
+                    source_code = f.read()
+                tree = ast.parse(source_code)
+                function_names = [node.name.lower() for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
+                function_calls = [node.func.id.lower() for node in ast.walk(tree) if isinstance(node, ast.Call)]
+
+                for function_name in function_names:
+                    if function_name not in function_calls and function_name != "main":
+                        unused_functions.append(function_name)
+
+    return unused_functions
+
+if __name__ == "__main__":
+    directory_path = input("Enter the directory path: ")
+    unused_functions = find_unused_functions(directory_path)
+
+    if unused_functions:
+        print("Unused functions found:")
+        for function_name in unused_functions:
+            print(function_name)
+    else:
+        print("No unused functions found.")
